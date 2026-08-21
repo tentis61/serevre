@@ -6,6 +6,26 @@ jobs:
   build:
     runs-on: windows-latest
     steps:
-      - name: Baslat
-        uses: mxschmitt/action-tmate@v3
-        if: always()
+      - name: Ngrok Indir
+        run: |
+          Invoke-WebRequest https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-windows-amd64.zip -OutFile ngrok.zip
+          Expand-Archive ngrok.zip -Force
+        
+      - name: RDP ve Kullanici Ayarla
+        run: |
+          Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -name "fDenyTSConnections" -Value 0
+          Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
+          net user vdsadmin Parola12345! /add
+          net localgroup "Remote Desktop Users" vdsadmin /add
+          net localgroup "Administrators" vdsadmin /add
+          
+      - name: Ngrok Bagla
+        env:
+          NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
+        run: |
+          .\ngrok.exe authtoken $env:NGROK_AUTH_TOKEN
+          Start-Process powershell -ArgumentList '-NoExit', '.\ngrok.exe tcp --region eu 3389'
+          
+      - name: Calisma Suresi
+        run: |
+          Start-Sleep -Seconds 21600
