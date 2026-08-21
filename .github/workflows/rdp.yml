@@ -6,24 +6,23 @@ jobs:
   build:
     runs-on: windows-latest
     steps:
-      - name: Ngrok Kurulum
+      - name: Ngrok Indir
         run: |
           Invoke-WebRequest https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-windows-amd64.zip -OutFile ngrok.zip
-          Expand-Archive ngrok.zip
+          Expand-Archive ngrok.zip -Force
         
       - name: RDP Aktif Et
         run: |
           Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -name "fDenyTSConnections" -Value 0
           Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
-          cmd /c "net user runneradmin Parola12345!"
           
       - name: Ngrok Baslat
         env:
           NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
         run: |
-          .\ngrok\ngrok.exe config add-authtoken $env:NGROK_AUTH_TOKEN
-          Start-Process powershell -ArgumentList '-NoExit', '.\ngrok\ngrok.exe tcp 3389'
+          .\ngrok.exe authtoken $env:NGROK_AUTH_TOKEN
+          Start-Process powershell -ArgumentList '-NoExit', '.\ngrok.exe tcp 3389'
           
-      - name: Calisma Suresi
+      - name: Bekleme
         run: |
           Start-Sleep -Seconds 21600
