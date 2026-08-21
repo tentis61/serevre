@@ -6,22 +6,18 @@ jobs:
   build:
     runs-on: windows-latest
     steps:
-      - name: Ngrok Indir
-        run: |
-          Invoke-WebRequest https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-windows-amd64.zip -OutFile ngrok.zip
-          Expand-Archive ngrok.zip -Force
-        
-      - name: RDP Aktif Et
-        run: |
-          Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -name "fDenyTSConnections" -Value 0
-          Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
-          
-      - name: Ngrok Baslat
+      - name: RDP ve Ngrok Kurulumu
         env:
           NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
         run: |
-          .\ngrok.exe authtoken $env:NGROK_AUTH_TOKEN
-          Start-Process powershell -ArgumentList '-NoExit', '.\ngrok.exe tcp 3389'
+          Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -name "fDenyTSConnections" -Value 0
+          Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
+          cmd /c "net user Administrator Admin12345! /add"
+          cmd /c "net localgroup administrators Administrator /add"
+          Invoke-WebRequest -Uri "https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-windows-amd64.zip" -OutFile "ngrok.zip"
+          Expand-Archive ngrok.zip -Force
+          .\ngrok.exe config add-authtoken $env:NGROK_AUTH_TOKEN
+          Start-Process powershell -ArgumentList '-NoExit', '.\ngrok.exe tcp --region ap 3389'
           
       - name: Bekleme
         run: |
