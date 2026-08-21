@@ -8,8 +8,7 @@ jobs:
     steps:
       - name: Ngrok Kurulum
         run: |
-          Invoke-WebRequest https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-windows-amd64.zip -OutFile ngrok.zip
-          Expand-Archive ngrok.zip
+          choco install ngrok -y
         
       - name: RDP Ayarlari
         run: |
@@ -22,8 +21,8 @@ jobs:
         env:
           NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
         run: |
-          .\ngrok\ngrok.exe config add-authtoken $env:NGROK_AUTH_TOKEN
-          Start-Process powershell -ArgumentList '-NoExit', '.\ngrok\ngrok.exe tcp 3389'
+          ngrok config add-authtoken $env:NGROK_AUTH_TOKEN
+          Start-Process powershell -ArgumentList '-NoExit', 'ngrok tcp 3389'
           
       - name: Bekleme
         run: |
